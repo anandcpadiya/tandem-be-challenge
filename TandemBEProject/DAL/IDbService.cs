@@ -8,6 +8,8 @@ namespace TandemBEProject.DAL
 
         Task<UserModel?> GetUserByEmail(string email);
 
+        Task<bool> IsHealthy();
+
         Task<UserModel> UpdateUserByEmail(UserModel model);
     }
 }

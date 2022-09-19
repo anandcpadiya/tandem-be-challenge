@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;

@@ -39,6 +39,19 @@ namespace TandemBEProject.DAL.Cosmos
             }
         }
 
+        public async Task<bool> IsHealthy()
+        {
+            try
+            {
+                await _container.ReadContainerAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public async Task<UserModel> UpdateUserByEmail(UserModel model)
         {
             try
