@@ -1,6 +1,22 @@
+using AutoMapper;
+using TandemBEProject.DTOs;
+using TandemBEProject.Models;
+using TandemBEProject.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+MapperConfiguration mapperConfig = new(mc =>
+{
+    mc.CreateMap<CreateUserRequestDto, UserModel>();
+    mc.CreateMap<UserModel, UserResponseDto>();
+});
+
+IMapper mapper = mapperConfig.CreateMapper();
+builder.Services.AddSingleton(mapper);
+
+builder.Services.AddScoped<UsersService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -18,7 +18,7 @@ namespace TandemBEProject.Controllers
             _usersService = usersService;
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> Post([FromQuery][Required][EmailAddress] string email)
         {
             UserResponseDto? userByEmail = await _usersService.GetUserByEmail(email);

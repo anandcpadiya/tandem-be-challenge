@@ -1,17 +1,37 @@
-﻿using TandemBEProject.DTOs;
+﻿using AutoMapper;
+using TandemBEProject.DAL;
+using TandemBEProject.DTOs;
+using TandemBEProject.Models;
 
 namespace TandemBEProject.Services
 {
     public class UsersService
     {
-        internal Task<UserResponseDto> CreateUser(CreateUserRequestDto createUserRequest)
+        private readonly IMapper _mapper;
+        private readonly IDbService _dbService;
+
+        public UsersService(IMapper mapper, IDbService dbService)
         {
-            throw new NotImplementedException();
+            _mapper = mapper;
+            _dbService = dbService;
         }
 
-        internal Task<UserResponseDto?> GetUserByEmail(string email)
+        internal async Task<UserResponseDto> CreateUser(CreateUserRequestDto createUserRequest)
         {
-            throw new NotImplementedException();
+            UserModel model = _mapper.Map<UserModel>(createUserRequest);
+            model.UserId = Guid.NewGuid();
+            model.Name = string.Format("{0} {1} {2}", createUserRequest.FirstName, createUserRequest.MiddleName, createUserRequest.LastName);
+
+            await _dbService.AddUser(model);
+
+            return _mapper.Map<UserResponseDto>(model);
+        }
+
+        internal async Task<UserResponseDto?> GetUserByEmail(string email)
+        {
+            UserModel? userModel = await _dbService.GetUserByEmail(email);
+
+            return _mapper.Map<UserResponseDto>(userModel);
         }
     }
 }
