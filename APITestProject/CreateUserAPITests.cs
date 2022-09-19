@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;
@@ -55,7 +56,7 @@ namespace APITestProject
             user.EmailAddress = "bad_email";
             HttpContent? body = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, Application.Json);
 
-            HttpResponseMessage response = await _client.PostAsync("/api/users?email=fake_email@fakedomain.com", body);
+            HttpResponseMessage response = await _client.PostAsync("/api/users", body);
 
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -66,7 +67,7 @@ namespace APITestProject
 
 
         [TestMethod]
-        public async Task ShouldCreateAndGetUserAndReturnConflictSecondTime()
+        public async Task ShouldCreateAndGetAndUpdateUserAndReturnConflictSecondTime()
         {
             string randomText = new(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 5)
                 .Select(s => s[new Random().Next(s.Length)]).ToArray()
@@ -78,6 +79,7 @@ namespace APITestProject
             Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
             await VerifyUserResponseDto(response, email, "MockFirstName MockMiddleName MockLastName");
 
+
             // Should get the created user by email
             HttpResponseMessage getUserResponse = await _client.GetAsync(
                 $"/api/users?email={email}"
@@ -85,11 +87,39 @@ namespace APITestProject
             Assert.AreEqual(HttpStatusCode.OK, getUserResponse.StatusCode);
             await VerifyUserResponseDto(getUserResponse, email, "MockFirstName MockMiddleName MockLastName");
 
+
             // Should return conflict when we try to create a user with the same email second time
             HttpResponseMessage conflictResponse = await SendCreateUserRequestAsync(email);
             Assert.AreEqual(HttpStatusCode.Conflict, conflictResponse.StatusCode);
+
+
+            // Should update the user
+            CreateUserRequestDto toBeUpdated = GetMockUser();
+            toBeUpdated.EmailAddress = email;
+            toBeUpdated.MiddleName = "UpdatedMiddleName";
+            HttpContent? updateRequestBody = new StringContent(
+                JsonConvert.SerializeObject(toBeUpdated), Encoding.UTF8, Application.Json
+            );
+
+            HttpResponseMessage updateResponse = await _client.PutAsync("/api/users", updateRequestBody);
+            Assert.AreEqual(HttpStatusCode.OK, updateResponse.StatusCode);
+
+            await VerifyUserResponseDto(updateResponse, email, "MockFirstName UpdatedMiddleName MockLastName");
         }
 
+
+        [TestMethod]
+        public async Task ShouldReturnNotFoundIfUserDoesNotExistWhileUpdating()
+        {
+            CreateUserRequestDto user = GetMockUser();
+            user.EmailAddress = "fake_email@fakedomain.com";
+
+            HttpContent? body = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, Application.Json);
+
+            HttpResponseMessage updateResponse = await _client.PutAsync("/api/users", body);
+
+            Assert.AreEqual(HttpStatusCode.NotFound, updateResponse.StatusCode);
+        }
 
         private static async Task VerifyUserResponseDto(HttpResponseMessage response, string expectedEmail, string expectedName)
         {
@@ -107,7 +137,7 @@ namespace APITestProject
             user.EmailAddress = email;
             HttpContent? body = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, Application.Json);
 
-            return await _client.PostAsync("/api/users?email=fake_email@fakedomain.com", body);
+            return await _client.PostAsync("/api/users", body);
         }
 
 
