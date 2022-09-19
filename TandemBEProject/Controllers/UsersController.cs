@@ -20,6 +20,9 @@ namespace TandemBEProject.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetUserByEmail([FromQuery][Required][EmailAddress] string email)
         {
             UserResponseDto? userByEmail = await _usersService.GetUserByEmail(email);
@@ -28,6 +31,9 @@ namespace TandemBEProject.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDto createUserRequest)
         {
             try
