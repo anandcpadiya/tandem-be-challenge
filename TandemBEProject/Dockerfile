@@ -7,14 +7,14 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["TandemBEProject/TandemBEProject.csproj", "TandemBEProject/"]
-RUN dotnet restore "TandemBEProject/TandemBEProject.csproj"
+COPY ["TandemBEProject.csproj", "."]
+RUN dotnet restore "./TandemBEProject.csproj"
 COPY . .
-WORKDIR "/src/TandemBEProject"
+WORKDIR "/src/."
 RUN dotnet build "TandemBEProject.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "TandemBEProject.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "TandemBEProject.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
