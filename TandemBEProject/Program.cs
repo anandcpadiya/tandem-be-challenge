@@ -1,4 +1,6 @@
 using AutoMapper;
+using TandemBEProject.DAL;
+using TandemBEProject.DAL.Cosmos;
 using TandemBEProject.DTOs;
 using TandemBEProject.Models;
 using TandemBEProject.Services;
@@ -16,6 +18,7 @@ MapperConfiguration mapperConfig = new(mc =>
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
+builder.Services.AddSingleton<IDbService, CosmosDbService>();
 builder.Services.AddScoped<UsersService>();
 
 builder.Services.AddControllers();
