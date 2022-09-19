@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Cosmos;
-using System.Net.Mail;
 using TandemBEProject.DAL.Exceptions;
 using TandemBEProject.Models;
 
@@ -37,6 +36,29 @@ namespace TandemBEProject.DAL.Cosmos
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 return null;
+            }
+        }
+
+        public async Task<UserModel> UpdateUserByEmail(UserModel model)
+        {
+            try
+            {
+                ItemResponse<UserModel> response = await _container.ReadItemAsync<UserModel>(
+                    model.EmailAddress, new PartitionKey(model.EmailAddress)
+                );
+
+                UserModel existingModel = response.Resource;
+                existingModel.FirstName = model.FirstName;
+                existingModel.MiddleName = model.MiddleName;
+                existingModel.LastName = model.LastName;
+                existingModel.Name = model.Name;
+                existingModel.PhoneNumber = model.PhoneNumber;
+
+                return await _container.UpsertItemAsync(existingModel);
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                throw new UserNotFoundException(string.Format("Did not find any user with {0} email.", model.EmailAddress));
             }
         }
     }

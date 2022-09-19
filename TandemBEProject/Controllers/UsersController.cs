@@ -4,8 +4,6 @@ using TandemBEProject.DAL.Exceptions;
 using TandemBEProject.DTOs;
 using TandemBEProject.Services;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace TandemBEProject.Controllers
 {
     [Route("api/users")]
@@ -41,6 +39,28 @@ namespace TandemBEProject.Controllers
                 UserResponseDto createdUser = await _usersService.CreateUser(createUserRequest);
 
                 return CreatedAtAction(nameof(GetUserByEmail), new { email = createdUser.EmailAddress }, createdUser);
+            }
+            catch (UserExistsException ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(UserResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> UpdateUserByEmail([FromBody] CreateUserRequestDto createUserRequest)
+        {
+            try
+            {
+                UserResponseDto updatedUser = await _usersService.UpdateUserByEmail(createUserRequest);
+
+                return Ok(updatedUser);
+            }
+            catch (UserNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (UserExistsException ex)
             {

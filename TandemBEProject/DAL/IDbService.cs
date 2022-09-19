@@ -7,5 +7,7 @@ namespace TandemBEProject.DAL
         Task AddUser(UserModel model);
 
         Task<UserModel?> GetUserByEmail(string email);
+
+        Task<UserModel> UpdateUserByEmail(UserModel model);
     }
 }

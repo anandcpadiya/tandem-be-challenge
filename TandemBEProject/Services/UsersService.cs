@@ -20,7 +20,7 @@ namespace TandemBEProject.Services
         {
             UserModel model = _mapper.Map<UserModel>(createUserRequest);
             model.UserId = Guid.NewGuid();
-            model.Name = string.Format("{0} {1} {2}", createUserRequest.FirstName, createUserRequest.MiddleName, createUserRequest.LastName);
+            model.Name = $"{createUserRequest.FirstName} {createUserRequest.MiddleName} {createUserRequest.LastName}";
 
             await _dbService.AddUser(model);
 
@@ -32,6 +32,16 @@ namespace TandemBEProject.Services
             UserModel? userModel = await _dbService.GetUserByEmail(email);
 
             return _mapper.Map<UserResponseDto>(userModel);
+        }
+
+        internal async Task<UserResponseDto> UpdateUserByEmail(CreateUserRequestDto updatedUser)
+        {
+            UserModel model = _mapper.Map<UserModel>(updatedUser);
+            model.Name = $"{updatedUser.FirstName} {updatedUser.MiddleName} {updatedUser.LastName}";
+
+            UserModel updatedModel = await _dbService.UpdateUserByEmail(model);
+
+            return _mapper.Map<UserResponseDto>(updatedModel);
         }
     }
 }
