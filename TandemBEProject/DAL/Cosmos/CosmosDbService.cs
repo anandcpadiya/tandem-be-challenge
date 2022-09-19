@@ -1,17 +1,43 @@
-﻿using TandemBEProject.Models;
+﻿using Microsoft.Azure.Cosmos;
+using System.Net.Mail;
+using TandemBEProject.DAL.Exceptions;
+using TandemBEProject.Models;
 
 namespace TandemBEProject.DAL.Cosmos
 {
     public class CosmosDbService : IDbService
     {
-        public Task AddUser(UserModel model)
+        private readonly Container _container;
+
+        public CosmosDbService(CosmosClient dbClient, string databaseName, string containerName)
         {
-            throw new NotImplementedException();
+            _container = dbClient.GetContainer(databaseName, containerName);
         }
 
-        public Task<UserModel?> GetUserByEmail(string email)
+        public async Task AddUser(UserModel model)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await _container.CreateItemAsync(model, new PartitionKey(model.EmailAddress));
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                throw new UserExistsException(string.Format("A user with {0} email already exists.", model.EmailAddress));
+            }
+        }
+
+        public async Task<UserModel?> GetUserByEmail(string email)
+        {
+            try
+            {
+                ItemResponse<UserModel> response = await _container.ReadItemAsync<UserModel>(email, new PartitionKey(email));
+
+                return response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
         }
     }
 }

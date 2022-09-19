@@ -1,27 +1,34 @@
 using AutoMapper;
+using TandemBEProject;
 using TandemBEProject.DAL;
-using TandemBEProject.DAL.Cosmos;
 using TandemBEProject.DTOs;
 using TandemBEProject.Models;
 using TandemBEProject.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Configured AutoMapper
 MapperConfiguration mapperConfig = new(mc =>
 {
     mc.CreateMap<CreateUserRequestDto, UserModel>();
     mc.CreateMap<UserModel, UserResponseDto>();
 });
-
 IMapper mapper = mapperConfig.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
-builder.Services.AddSingleton<IDbService, CosmosDbService>();
+
+// Configured Cosmos DB
+builder.Services.AddSingleton<IDbService>(
+    CosmosHelper.InitializeCosmosClientInstanceAsync(builder.Configuration.GetSection("CosmosDb"))
+        .GetAwaiter()
+        .GetResult()
+);
+
+// Configured Services
 builder.Services.AddScoped<UsersService>();
 
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

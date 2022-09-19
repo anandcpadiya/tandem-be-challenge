@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using TandemBEProject.DAL.Exceptions;
 using TandemBEProject.DTOs;
 using TandemBEProject.Services;
 
@@ -19,20 +20,26 @@ namespace TandemBEProject.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Post([FromQuery][Required][EmailAddress] string email)
+        public async Task<IActionResult> GetUserByEmail([FromQuery][Required][EmailAddress] string email)
         {
             UserResponseDto? userByEmail = await _usersService.GetUserByEmail(email);
 
             return userByEmail == null ? NotFound() : Ok(userByEmail);
         }
 
-        // POST api/<UsersController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateUserRequestDto createUserRequest)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDto createUserRequest)
         {
-            UserResponseDto createdUser = await _usersService.CreateUser(createUserRequest);
+            try
+            {
+                UserResponseDto createdUser = await _usersService.CreateUser(createUserRequest);
 
-            return Ok(createdUser);
+                return CreatedAtAction(nameof(GetUserByEmail), new { email = createdUser.EmailAddress }, createdUser);
+            }
+            catch (UserExistsException ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
     }
 }

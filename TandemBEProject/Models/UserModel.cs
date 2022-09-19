@@ -1,4 +1,6 @@
-﻿namespace TandemBEProject.Models
+﻿using Newtonsoft.Json;
+
+namespace TandemBEProject.Models
 {
     public class UserModel
     {
@@ -8,6 +10,8 @@
         public string? LastName { get; set; }
         public string? Name { get; set; }
         public string? PhoneNumber { get; set; }
+
+        [JsonProperty(PropertyName = "id")]
         public string? EmailAddress { get; set; }
     }
 }
