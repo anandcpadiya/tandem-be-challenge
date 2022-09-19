@@ -51,11 +51,7 @@ namespace APITestProject
         [TestMethod]
         public async Task ShouldReturnBadRequestWhileCreatingUserWhenEmailIsInvalid()
         {
-            CreateUserRequestDto user = GetMockUser();
-            user.EmailAddress = "bad_email";
-            HttpContent? body = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, Application.Json);
-
-            HttpResponseMessage response = await _client.PostAsync("/api/users", body);
+            HttpResponseMessage response = await SendCreateUserRequestAsync("bad_email");
 
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
 
@@ -71,7 +67,7 @@ namespace APITestProject
             string randomText = new(Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 5)
                 .Select(s => s[new Random().Next(s.Length)]).ToArray()
             );
-            string email = $"mock_email_${randomText}@mock.com";
+            string email = $"mock_email_{randomText}@mock.com";
 
             HttpResponseMessage response = await SendCreateUserRequestAsync(email);
 
